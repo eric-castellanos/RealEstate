@@ -1,0 +1,5 @@
+outs:
+- md5: 4ba59bb54861d44ffd1d7fd82b02d38f
+  size: 8882
+  hash: md5
+  path: msa_data.parquet
