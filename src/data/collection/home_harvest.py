@@ -92,7 +92,7 @@ def fetch_with_homeharvest(metro: MetroArea):
     try:
         return scrape_property(
             location=metro.query_location,
-            listing_type="for_sale",
+            listing_type="sold",
             extra_property_data=True,
         )
     except Exception as exc:  # pragma: no cover - network/provider dependent

@@ -48,6 +48,12 @@ def normalize_metro(value: object) -> str:
     return " ".join(text.split())
 
 
+def normalize_datetime_series(values: pd.Series) -> pd.Series:
+    """Parse mixed timestamp inputs and return timezone-naive UTC timestamps."""
+    parsed = pd.to_datetime(values, errors="coerce", utc=True)
+    return parsed.dt.tz_localize(None)
+
+
 def detect_property_date(frame: pd.DataFrame) -> pd.Series:
     """Return best-effort property date from available date columns."""
     candidate_columns = [
@@ -60,7 +66,7 @@ def detect_property_date(frame: pd.DataFrame) -> pd.Series:
     if not available:
         return pd.Series(pd.NaT, index=frame.index, dtype="datetime64[ns]")
 
-    parsed = [pd.to_datetime(frame[col], errors="coerce") for col in available]
+    parsed = [normalize_datetime_series(frame[col]) for col in available]
     date_series = parsed[0]
     for candidate in parsed[1:]:
         date_series = date_series.fillna(candidate)
@@ -120,7 +126,7 @@ def load_fred(root: Path) -> pd.DataFrame:
         LOGGER.warning("FRED data does not contain 'date'; skipping fred join")
         return pd.DataFrame()
 
-    fred["date"] = pd.to_datetime(fred["date"], errors="coerce")
+    fred["date"] = normalize_datetime_series(fred["date"])
     fred = fred.dropna(subset=["date"]).sort_values("date")
     fred = fred.ffill()
     LOGGER.info("Loaded %s FRED rows", len(fred))
